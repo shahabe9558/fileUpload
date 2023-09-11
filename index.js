@@ -11,7 +11,10 @@ app.use(express.json());
 
 // fileUploader middleware, upload media on server
 const fileUpload = require('express-fileupload');
-app.use(fileUpload());
+app.use(fileUpload({
+   useTempFiles : true,
+   tempFileDir : '/tmp/'
+}));
 
 // connecting to db 
 const db = require('./config/database');
