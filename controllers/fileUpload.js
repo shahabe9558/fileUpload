@@ -1,6 +1,7 @@
 const { log } = require('console');
 const File = require('../models/file');
-const cloudinary = require('cloudinary');
+const cloudinary = require('cloudinary').v2;
+require('dotenv').config();
 
 // localfile upload handler function 
 
@@ -33,9 +34,10 @@ function isFileTypeSupporeted(type, supportedTypes){
 }
 
 async function uploadFileToCloudinary(file, folder){
+    
     const options = {folder};
-    console.log("tempfile path is -> ", file.tempFilePath);
-    await cloudinary.v2.uploader.upload(file.tempFilePath, options);
+    return await cloudinary.uploader.upload(file.tempFilePath, options);
+ 
     
     
 }
@@ -53,7 +55,7 @@ exports.uploadImage = async (req, res) =>{
         const supportedTypes = ["jpg", "jpeg", "png"];
         const fileType = file.name.split('.')[1].toLowerCase();
 
-        console.log("File type is => ", fileType);
+       
 
         if(!isFileTypeSupporeted(fileType, supportedTypes)){
             return res.status(400).json({
@@ -64,17 +66,19 @@ exports.uploadImage = async (req, res) =>{
 
     
         // file format supported hai 
+       
         const response = await uploadFileToCloudinary(file, "Testing");
-
-        console.log("file is => ", file);
+    
         console.log("Response is -> ", response);
 
         // db me entry kar do 
-        // const fileData = await File.create({
-        //     name, 
-        //     tags,
-        //     email
-        // })
+        const fileData = await File.create({
+            name, 
+            tags,
+            email,
+            imageUrl:response.secure_url,
+
+        });
 
         res.json({
             success:true,
@@ -89,6 +93,45 @@ exports.uploadImage = async (req, res) =>{
             message:"Errror while uploading the image",
            
         })
+    }
+}
+
+exports.videoUpload = async (req, res) => {
+    try{
+        // fetch data 
+        const {name1, tags1, email1} = req.body;
+
+        // fetch file 
+     
+        const file1 = req.files.nature;
+
+        // validation 
+        const supportedTypes1 = ["mp4", "mov"];
+        const fileType1 = file1.name.split('.')[1].toLowerCase();
+
+        if(!isFileTypeSupporeted(fileType1, supportedTypes1)){
+            return res.status(400).json({
+                success:false,
+                message:"File type is not supported",
+            })
+        }
+
+        // fileType supported hai 
+        const response1 = await uploadFileToCloudinary(file1, "Testing");
+        console.log(response1);
+        res.json({
+            success: true,
+            message:"Uploaded to cloudinary successfully",
+        })
+
+        
+    }
+    catch(error){
+       console.log(error);
+       return res.status(401).json({
+        success:false,
+        message:"Error while uploading the video fiile",
+       })
     }
 }
 
